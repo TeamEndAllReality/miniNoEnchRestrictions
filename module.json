@@ -1,0 +1,12 @@
+{
+  "id": "miniNoEnchRestrictions",
+  "name": "Enchantment Restriction Remover",
+  "author": "Mini",
+  "version": "1.0.0",
+  "released": "5/08/2018",
+  "updated": "5/08/2018",
+  "description": "A simple enchantment restriction remover; aimed for those who loved the skse plugin in oldrim",
+  "requires": ["unifiedPatchingFramework"],
+  "moduleLoader": "UPF",
+  "canHotLoad": true
+}
