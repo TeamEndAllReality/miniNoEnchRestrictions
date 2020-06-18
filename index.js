@@ -6,31 +6,36 @@ registerPatcher({
         label: 'Ench Restrict Remover',
         hide: true
     },
-    execute: {
-        initialize: function(patch, helpers, settings, locals) {
-          let flst = xelib.AddElement(patch, 'FLST\\FLST');
-          helpers.cacheRecord(flst, "NER");
-          locals.flst = xelib.LongName(flst);
-          helpers.loadRecords('KYWD').forEach(kywd => {
-              let name = xelib.LongName(kywd);
-              if (!name.match(/^(Clothing|Armor(?!Material)|WeapType)/)) return;
-              helpers.logMessage("Allowing "+ xelib.LongName(kywd));
-              xelib.AddFormID(flst, xelib.GetHexFormID(kywd));
-          });
-        },
-        process: [{
-            load: function(plugin, helpers, settings, locals) {
-                return {
+    execute: function(patch, helpers, settings, locals) {
+        return {
+            initialize: function(patch, helpers, settings, locals) {
+                locals.enchcount = 0;
+                locals.kywdcnt = 0;
+                let flst = xelib.AddElement(patch, 'FLST\\FLST');
+                helpers.cacheRecord(flst, "NER");
+                locals.flst = xelib.LongName(flst);
+                helpers.loadRecords('KYWD').forEach(kywd => {
+                    let name = xelib.LongName(kywd);
+                    if (!name.match(/^(Clothing|Armor(?!Material)|WeapType)/)) return;
+                    locals.kywdcnt ++;
+                    xelib.AddFormID(flst, xelib.GetHexFormID(kywd));
+                });
+            },
+            process: [{
+                load: {
                     signature: 'ENCH',
                     filter: function(record) {
-                      return xelib.HasElement(record, "ENIT\\Worn Restrictions");
+                        return xelib.HasElement(record, "ENIT\\Worn Restrictions");
                     }
+                },
+                patch: function(record, helpers, settings, locals) {
+                    xelib.SetValue(record, "ENIT\\Worn Restrictions", locals.flst);
+                    locals.enchcount ++
                 }
-            },
-            patch: function(record, helpers, settings, locals) {
-                helpers.logMessage('patching '+xelib.LongName(record));
-                xelib.SetValue(record, "ENIT\\Worn Restrictions", locals.flst);
+            }],
+            finalize: function(patch, helpers, settings, locals) {
+                helpers.logMessage("Patched " + locals.enchcount + " enchatments, using "+locals.kywdcnt + " keywords");
             }
-        }]
+        }
     }
 });
